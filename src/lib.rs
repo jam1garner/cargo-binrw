@@ -16,7 +16,7 @@ use structopt::StructOpt;
 #[cfg_attr(feature = "cli", derive(StructOpt, Debug))]
 #[structopt(
     about = "A terminal CLI for reverse-engineering in Rust",
-    bin_name = "cargo binrw",
+    bin_name = "cargo binrw"
 )]
 pub enum Args {
     #[structopt(about = "Runs a live logging server")]
@@ -43,7 +43,7 @@ pub enum Args {
     New {
         #[structopt(parse(from_os_str))]
         project: Vec<PathBuf>,
-        
+
         #[structopt(last = true)]
         rest: Vec<String>,
     },
@@ -68,44 +68,46 @@ pub enum Args {
 #[cfg(feature = "cli")]
 impl Default for Args {
     fn default() -> Self {
-        Args::Run { 
-                host: vec![IpAddr::V4(::std::net::Ipv4Addr::new(127, 0, 0, 1))],
-                port: 42069 as u16,
-                project: Some(::std::env::var("CARGO_MANIFEST_DIR").unwrap()),
-                rest: vec![]
-            }
+        Args::Run {
+            host: vec![IpAddr::V4(::std::net::Ipv4Addr::new(127, 0, 0, 1))],
+            port: 42069 as u16,
+            project: Some(::std::env::var("CARGO_MANIFEST_DIR").unwrap()),
+            rest: vec![],
+        }
     }
 }
 impl Args {
-    fn verify_project(&mut self) -> Self {
-        
-        match self.as_ref() {
-            &mut Self::Run {host, port, project, rest } => { 
-                Args::Run { 
-                    host: host,
-                    port: port,
-                    project: Some(project.unwrap_or_else(|| ::std::env::var("CARGO_MANIFEST_DIR").unwrap())),
-                    rest: rest
-                }
+    fn verify_project(self) -> Self {
+        match self {
+            Self::Run {
+                host,
+                port,
+                project,
+                rest,
+            } => Args::Run {
+                host: host,
+                port: port,
+                project: Some(
+                    project.unwrap_or_else(|| ::std::env::var("CARGO_MANIFEST_DIR").unwrap()),
+                ),
+                rest: rest,
             },
-            &mut Self::New { project, rest } => { 
-                Args::New {
-                    project: vec![project.into_iter().next().unwrap()],
-                    rest: rest
-                }
+            Self::New { project, rest } => Args::New {
+                project: vec![project.into_iter().next().unwrap()],
+                rest: rest,
             },
-            &mut Self::Fuzz { project, rest } => { 
-                Args::Fuzz {
-                    project: Some(project.unwrap_or_else(|| ::std::env::var("CARGO_MANIFEST_DIR").unwrap())),
-                    rest: rest
-                }
+            Self::Fuzz { project, rest } => Args::Fuzz {
+                project: Some(
+                    project.unwrap_or_else(|| ::std::env::var("CARGO_MANIFEST_DIR").unwrap()),
+                ),
+                rest: rest,
             },
-            &mut Self::Hex { project, rest } => {
-                Args::Hex {
-                    project: Some(project.unwrap_or_else(|| ::std::env::var("CARGO_MANIFEST_DIR").unwrap())),
-                    rest: rest
-                }
-            }
+            Self::Hex { project, rest } => Args::Hex {
+                project: Some(
+                    project.unwrap_or_else(|| ::std::env::var("CARGO_MANIFEST_DIR").unwrap()),
+                ),
+                rest: rest,
+            },
         }
     }
 }
@@ -116,25 +118,27 @@ fn parse_interface(src: &str) -> Result<IpAddr, std::net::AddrParseError> {
     src.parse::<IpAddr>()
 }
 
-/*
-#[cfg(feature = "cli")]
-#[derive(StructOpt)]
-#[structopt(bin_name = "cargo")]
-pub enum CargoArgsWrapper {
-    Binrw(Args),
-}
-*/
 pub fn main(args: Args) {
     eprintln!("{:?}", &args);
-    
 }
 
 #[cfg(feature = "cli")]
 pub fn main_from_args() {
-    //let CargoArgsWrapper::Binrw(args) = StructOpt::from_args();
-    for (idx, arg) in ::std::env::args().enumerate() {
-        println!("{}: {}", idx, arg);
-    }
-    //let args = StructOpt::from_args();
-    //main(args)
+    // Running `cargo binrw` by itself should invoke the debugging server
+    // from `cargo binrw run [options] [project name]`, but this CLI
+    // prioritizes options with the ranked priority:
+    // (1) parameters declared at runtime from the shell, including environment variables;
+    // (2) parameters found in the `$CARGO_MANIFEST_DIR/binrw.toml` file;
+    // (3) parameters with their default values assigned at compile time.
+    let properties = if (::std::env::args().len() != 1 as usize) {
+        // Check whether `$CARGO_MANIFEST_DIR/binrw.toml` exists. If it does, load it into
+        // the runtime and override any default values with those specified in this file.
+        todo!();
+    } else {
+        // Otherwise use the default, out-of-the-box values
+        todo!();
+    };
+
+    let args = StructOpt::from_args();
+    main(args)
 }

@@ -1,0 +1,11 @@
+# {{ project }}.toml
+[project]
+name = "{{ project }}"
+host = "{{ host }}"
+port = "{{ port }}"
+silent_foreground = false
+
+[logging]
+enabled = false
+output_file = "$CARGO_MANIFEST_DIR/binrw.log"
+mode = 'a'

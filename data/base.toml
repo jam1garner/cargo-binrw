@@ -1,11 +1,11 @@
 # {{ project }}.toml
 [project]
-name = "{{ project }}"
-host = "{{ host }}"
-port = "{{ port }}"
-silent_foreground = false
+name = "{{ project }}" # default project name is "my-binrw-project"
+host = "{{ host }}" # default value is "127.0.0.1"
+port = "{{ port }}"  # default value is "31958"
+silent_foreground = false # output is not sent to stdout and stderr; a TTY is spawned if this is set to `true`. 
 
 [logging]
-enabled = false
-output_file = "$CARGO_MANIFEST_DIR/binrw.log"
-mode = 'a'
+enabled = false # logging is not enabled by default
+output_file = "$CARGO_MANIFEST_DIR/binrw.log" # will panic if write permission is not available
+mode = "append" # Viable modes: "append" and "overwrite"

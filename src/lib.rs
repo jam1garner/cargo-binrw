@@ -30,7 +30,7 @@ pub enum Args {
         )]
         host: Vec<IpAddr>,
 
-        #[structopt(short = "p", long = "port", default_value = "42069")]
+        #[structopt(short = "p", long = "port", default_value = "31958")]
         port: u16,
 
         #[structopt(long = "project")]
@@ -122,15 +122,16 @@ pub fn main(args: Args) {
     eprintln!("{:?}", &args);
 }
 
+/// Running `cargo binrw` by itself should invoke the debugging server
+/// from `cargo binrw run [options] [project name]`, but this CLI
+/// prioritizes options with the ranked priority:
+/// (1) parameters declared at runtime from the shell, including environment variables;
+/// (2) parameters found in the `$CARGO_MANIFEST_DIR/binrw.toml` file;
+/// (3) parameters with their default values assigned at compile time.
 #[cfg(feature = "cli")]
 pub fn main_from_args() {
-    // Running `cargo binrw` by itself should invoke the debugging server
-    // from `cargo binrw run [options] [project name]`, but this CLI
-    // prioritizes options with the ranked priority:
-    // (1) parameters declared at runtime from the shell, including environment variables;
-    // (2) parameters found in the `$CARGO_MANIFEST_DIR/binrw.toml` file;
-    // (3) parameters with their default values assigned at compile time.
-    let properties = if (::std::env::args().len() != 1 as usize) {
+    
+    let properties = if ::std::env::args().len() == 1 as usize {
         // Check whether `$CARGO_MANIFEST_DIR/binrw.toml` exists. If it does, load it into
         // the runtime and override any default values with those specified in this file.
         todo!();

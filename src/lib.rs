@@ -1,17 +1,18 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
+#![feature(path_try_exists)]
+use std::path::Path;
+use cfg_if::cfg_if;
 
-#[cfg(feature = "cli")]
-use std::net::IpAddr;
+cfg_if! {
+    if #[cfg(feature = "cli")] {
+        use std::net::IpAddr;
+        use std::str::FromStr;
+        use std::path::{PathBuf};
+        use structopt::StructOpt;
+    }
+}
 
-#[cfg(feature = "cli")]
-use std::str::FromStr;
-
-#[cfg(feature = "cli")]
-use std::path::PathBuf;
-
-#[cfg(feature = "cli")]
-use structopt::StructOpt;
 
 #[cfg_attr(feature = "cli", derive(StructOpt, Debug))]
 #[structopt(
@@ -41,6 +42,7 @@ pub enum Args {
     },
     #[structopt(about = "Creates a new binrw project template")]
     New {
+
         #[structopt(parse(from_os_str))]
         project: Vec<PathBuf>,
 
@@ -132,12 +134,30 @@ pub fn main(args: Args) {
 pub fn main_from_args() {
     
     let properties = if ::std::env::args().len() == 1 as usize {
-        // Check whether `$CARGO_MANIFEST_DIR/binrw.toml` exists. If it does, load it into
-        // the runtime and override any default values with those specified in this file.
-        todo!();
-    } else {
-        // Otherwise use the default, out-of-the-box values
-        todo!();
+ 
+        let mut content = String::from(include_str!("../data/default.toml").to_string());
+        
+        if let Some(manifest_dir) = ::std::env::var_os("CARGO_MANIFEST_DIR") {
+            
+            let some_propfile = {
+                match Path::new(&manifest_dir).join("binrw.toml") {
+                    project => {
+                        if project.try_exists().unwrap() { Some(project) } 
+                        else { None }
+                    },
+                    
+                }    
+            };
+            match some_propfile {
+                Some(toml_path) => {
+                    *&mut content = String::from(::std::fs::read_to_string(toml_path)
+                                                 .expect("Please report this as a bug."));
+                },
+                None => {
+                    // Default behavior handles this case
+                }
+            };
+        };
     };
 
     let args = StructOpt::from_args();

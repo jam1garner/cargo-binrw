@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+cfg-if = "1.0.0"
+minijinja = "0.8.1"
+serde = "1.0.130"
 structopt = { version = "0.3", optional = true }
 
 [features]

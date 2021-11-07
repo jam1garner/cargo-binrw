@@ -6,6 +6,7 @@ use cfg_if::cfg_if;
 
 cfg_if! {
     if #[cfg(feature = "cli")] {
+        use std::env;
         use std::net::IpAddr;
         use std::str::FromStr;
         use std::path::{PathBuf};
@@ -72,8 +73,8 @@ impl Default for Args {
     fn default() -> Self {
         Args::Run {
             host: vec![IpAddr::V4(::std::net::Ipv4Addr::new(127, 0, 0, 1))],
-            port: 42069 as u16,
-            project: Some(::std::env::var("CARGO_MANIFEST_DIR").unwrap()),
+            port: 31958 as u16,
+            project: Some(env::var_os("CARGO_MANIFEST_DIR").unwrap().into_string().unwrap()),
             rest: vec![],
         }
     }
@@ -90,7 +91,7 @@ impl Args {
                 host: host,
                 port: port,
                 project: Some(
-                    project.unwrap_or_else(|| ::std::env::var("CARGO_MANIFEST_DIR").unwrap()),
+                    project.unwrap_or_else(|| env::var_os("CARGO_MANIFEST_DIR").unwrap().into_string().unwrap()),
                 ),
                 rest: rest,
             },
@@ -100,13 +101,13 @@ impl Args {
             },
             Self::Fuzz { project, rest } => Args::Fuzz {
                 project: Some(
-                    project.unwrap_or_else(|| ::std::env::var("CARGO_MANIFEST_DIR").unwrap()),
+                    project.unwrap_or_else(|| env::var_os("CARGO_MANIFEST_DIR").unwrap().into_string().unwrap()),
                 ),
                 rest: rest,
             },
             Self::Hex { project, rest } => Args::Hex {
                 project: Some(
-                    project.unwrap_or_else(|| ::std::env::var("CARGO_MANIFEST_DIR").unwrap()),
+                    project.unwrap_or_else(|| env::var_os("CARGO_MANIFEST_DIR").unwrap().into_string().unwrap()),
                 ),
                 rest: rest,
             },

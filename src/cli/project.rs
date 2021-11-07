@@ -1,14 +1,19 @@
+use cfg_if::cfg_if;
 
-#[cfg(feature = "cli")] 
-#[path = ""]
-mod reexport_cli_features {
-    use minijinja::Environment;
-    use serde::Serialize;
-    use crate::Args;
+cfg_if! {
+    if #[cfg(feature = "cli")] {
+        //use std::env;
+        //use std::net::IpAddr;
+        //use std::str::FromStr;
+        //use std::path::{PathBuf};
+        use structopt::StructOpt;
+        use minijinja::Environment;
+        use serde::Serialize;
+        use crate::Args;
+    }
 }
-#[cfg(feature = "cli")]
-pub use reexport_cli_features::*;
 
+#[cfg(feature = "cli")]
 /// new_project
 ///
 /// Generates the config file if it doesn't already exist.

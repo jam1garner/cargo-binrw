@@ -9,6 +9,9 @@ minijinja = "0.8.1"
 serde = "1.0.130"
 structopt = { version = "0.3", optional = true }
 
+[dev-dependencies]
+assert_cmd = "2.0.2"
+
 [features]
 default = ["cli"]
 cli = ["structopt"]

@@ -58,11 +58,12 @@ ENV PATH "$PATH:~/.cargo/bin"
 RUN ~/.cargo/bin/rustup install stable
 
 # At this point, let's build an editor from scratch
+ENV IMHEX_VERSION_TAG="v1.10.1"
 RUN mkdir /tmp/editor-integrations && \
-    # Begin building ImHex from source at v1.10.1
+    # Begin building ImHex from source
     git clone https://github.com/WerWolv/ImHex.git && \
     pushd ImHex && \
-    git checkout v1.10.1 && \
+    git checkout "$IMHEX_VERSION_TAG" && \
     git submodule update --init --recursive && \
     mkdir -p ./build && \
     cd build && \
@@ -79,7 +80,6 @@ RUN mkdir /tmp/editor-integrations && \
 # directory on the local FS.
 # 
 # Finally, we just needed a non-null ~/.config/imhex/settings.json file
-# {"hex.builtin.setting.general":{"hex.builtin.setting.general.auto_load_patterns":1,"hex.builtin.setting.general.show_tips":1},"hex.builtin.setting.hex_editor":{"hex.builtin.setting.hex_editor.advanced_decoding":0,"hex.builtin.setting.hex_editor.ascii":1,"hex.builtin.setting.hex_editor.column_count":16,"hex.builtin.setting.hex_editor.extra_info":1,"hex.builtin.setting.hex_editor.grey_zeros":1,"hex.builtin.setting.hex_editor.hexii":0,"hex.builtin.setting.hex_editor.uppercase_hex":1},"hex.builtin.setting.imhex":{"hex.builtin.setting.imhex.launched":1,"hex.builtin.setting.imhex.recent_files":["/home/david/devices.json.zip","/home/david/etest/backup"]},"hex.builtin.setting.interface":{"hex.builtin.setting.interface.color":0,"hex.builtin.setting.interface.fps":60,"hex.builtin.setting.interface.highlight_alpha":128,"hex.builtin.setting.interface.language":"en-US","hex.builtin.setting.interface.scaling":0}}                                                                                                                                                                                                                                            
 #
 RUN cp -ar plugins/bin/* /usr/bin/
 RUN cp -ar plugins/lib/* /usr/lib/

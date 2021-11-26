@@ -22,7 +22,7 @@ RUN set -Eeo pipefail; shopt -s dotglob inherit_errexit nullglob; \
 export DEBIAN_FRONTEND=noninteractive; \
     ( \
     for file in $(find /etc/apt/ -name "*.list"); do if [[ "$(grep $SOURCE_REPO_CONSITION $file)" != '' ]]; then \
-        echo "$SOURCE_REPO" >> /etc/apt/sources.list && apt-get update break; fi; done ) \
+        echo "$SOURCE_REPO" >> /etc/apt/sources.list && apt-get update && break; fi; done ) \
     && ( \
         for i in $(seq 1 10); do [ $i -gt 1 ] && sleep 1; \
             apt-get update \
@@ -67,7 +67,7 @@ RUN mkdir /tmp/editor-integrations && \
     mkdir -p ./build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release .. \
-    make -j
+    make
 
 # At this point, Running `ImHex` on Kali needs some configuration files
 # moved out to the file system that are checked at runtime.

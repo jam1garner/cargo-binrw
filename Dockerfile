@@ -58,11 +58,12 @@ ENV PATH "$PATH:~/.cargo/bin"
 RUN ~/.cargo/bin/rustup install stable
 
 # At this point, let's build an editor from scratch
+ENV IMHEX_VERSION_TAG="v1.10.1"
 RUN mkdir /tmp/editor-integrations && \
-    # Begin building ImHex from source at v1.10.1
+    # Begin building ImHex from source
     git clone https://github.com/WerWolv/ImHex.git && \
     pushd ImHex && \
-    git checkout v1.10.1 && \
+    git checkout "$IMHEX_VERSION_TAG" && \
     git submodule update --init --recursive && \
     mkdir -p ./build && \
     cd build && \

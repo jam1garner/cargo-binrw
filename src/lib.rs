@@ -1,8 +1,9 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 #![feature(path_try_exists)]
-use std::path::Path;
 use cfg_if::cfg_if;
+
+use std::path::Path;
 
 cfg_if! {
     if #[cfg(feature = "cli")] {
@@ -10,21 +11,28 @@ cfg_if! {
         use std::net::IpAddr;
         use std::str::FromStr;
         use std::path::{PathBuf};
-        use structopt::StructOpt;
+        use structopt::StructOpt;    
+        // Move these back once debugging is done
+        use std::net::TcpStream;
+        //use crate::error::{Result, Error};
+        //use std::net::IpAddr;
     }
 }
-
 
 #[cfg_attr(feature = "cli", derive(StructOpt, Debug))]
 #[structopt(
     about = "A terminal CLI for reverse-engineering in Rust",
-    bin_name = "cargo binrw"
+    bin_name = "cargo" 
 )]
 pub enum Args {
+    Binrw(SubCommand),
+}
+
+#[cfg_attr(feature = "cli", derive(StructOpt, Debug))]
+pub enum SubCommand {
     #[structopt(about = "Runs a live logging server")]
     Run {
         #[structopt(
-            short = "h",
             long = "host",
             default_value = "127.0.0.1",
             parse(try_from_str = parse_interface),
@@ -43,10 +51,8 @@ pub enum Args {
     },
     #[structopt(about = "Creates a new binrw project template")]
     New {
-
         #[structopt(parse(from_os_str))]
         project: Vec<PathBuf>,
-
         #[structopt(last = true)]
         rest: Vec<String>,
     },
@@ -69,49 +75,60 @@ pub enum Args {
 }
 
 #[cfg(feature = "cli")]
-impl Default for Args {
+impl Default for SubCommand {
     fn default() -> Self {
-        Args::Run {
+        SubCommand::Run {
             host: vec![IpAddr::V4(::std::net::Ipv4Addr::new(127, 0, 0, 1))],
             port: 31958 as u16,
-            project: Some(env::var_os("CARGO_MANIFEST_DIR").unwrap().into_string().unwrap()),
+            project: Some(
+                env::var_os("CARGO_MANIFEST_DIR")
+                    .unwrap()
+                    .into_string()
+                    .unwrap()
+            ),
             rest: vec![],
         }
     }
 }
-impl Args {
-    fn verify_project(self) -> Self {
+impl SubCommand {
+    fn verify_project(self) -> Result<Self, &'static str> {
+        let manifest = env::var_os("CARGO_MANIFEST_DIR")
+            .unwrap()
+            .into_string()
+            .unwrap();
+
         match self {
             Self::Run {
                 host,
                 port,
                 project,
                 rest,
-            } => Args::Run {
+            } => Ok(SubCommand::Run {
                 host: host,
                 port: port,
                 project: Some(
-                    project.unwrap_or_else(|| env::var_os("CARGO_MANIFEST_DIR").unwrap().into_string().unwrap()),
+                    project.unwrap_or_else(|| manifest),
                 ),
                 rest: rest,
-            },
-            Self::New { project, rest } => Args::New {
+            }),
+            Self::New { project, rest } => Ok(SubCommand::New {
                 project: vec![project.into_iter().next().unwrap()],
                 rest: rest,
-            },
-            Self::Fuzz { project, rest } => Args::Fuzz {
+            }),
+            Self::Fuzz { project, rest } => Ok(SubCommand::Fuzz {
                 project: Some(
-                    project.unwrap_or_else(|| env::var_os("CARGO_MANIFEST_DIR").unwrap().into_string().unwrap()),
+                    project.unwrap_or_else(|| manifest),
                 ),
                 rest: rest,
-            },
-            Self::Hex { project, rest } => Args::Hex {
+            }),
+            Self::Hex { project, rest } => Ok(SubCommand::Hex {
                 project: Some(
-                    project.unwrap_or_else(|| env::var_os("CARGO_MANIFEST_DIR").unwrap().into_string().unwrap()),
+                    project.unwrap_or_else(|| manifest),
                 ),
                 rest: rest,
-            },
+            })
         }
+        //Err("Malformed data passed")
     }
 }
 
@@ -121,8 +138,48 @@ fn parse_interface(src: &str) -> Result<IpAddr, std::net::AddrParseError> {
     src.parse::<IpAddr>()
 }
 
-pub fn main(args: Args) {
-    eprintln!("{:?}", &args);
+pub fn main(args: SubCommand) {
+    //use std::io::prelude::*;
+    use std::net::{TcpStream,TcpListener};
+    match &args {  
+        SubCommand::Run { 
+            host, 
+            port, 
+            project, 
+            rest 
+        } => {
+            // I believe the values at this point are final.
+            // Any overrides via environment variables, or properties
+            // defined in binrw.toml should have been completely overridden
+            // the base defaults.
+            // This server's sole job (at the moment) is to listen for incoming
+            // bytes and print them to stdout. 
+            // The understanding is that codegen from the binrw crate will simply
+            // send data that we print to STDOUT, until we have a proper way to forward
+            // the trace events to an editor plugin.
+            eprintln!("===============================================================================================");
+            eprintln!("-------------------------------------------B I N R W-------------------------------------------");
+            eprintln!("===============================================================================================");
+            eprintln!(" ");
+            eprintln!("Spawning the tracing server at:");
+            eprintln!("HOST:    tcp://{:?}", &host.first().unwrap());
+            eprintln!("PORT:    {:?}", &port);
+            eprintln!("PROJECT: {:?}", &project);
+            eprintln!(" ");
+
+            let stdout = std::io::stdout();
+            let hostname = host.first().unwrap();
+            let cnx = format!("{}:{}", &hostname, port);
+            let listener = TcpListener::bind(&cnx);
+            
+            for stream in listener.unwrap().incoming() {
+                let mut stream = stream.unwrap();
+                let recv = std::io::copy(&mut stream, &mut stdout.lock());
+                eprintln!("{:?}", &recv);
+            }
+        },
+        _ => todo!()
+    }
 }
 
 /// Running `cargo binrw` by itself should invoke the debugging server
@@ -133,34 +190,31 @@ pub fn main(args: Args) {
 /// (3) parameters with their default values assigned at compile time.
 #[cfg(feature = "cli")]
 pub fn main_from_args() {
+    let Args::Binrw(subcommand) = Args::from_args();
+    use SubCommand::*;
+    match subcommand.verify_project() {
+        Ok(sub_cmd) => match sub_cmd {
+            SubCommand::Run { 
+                ref host, 
+                ref port, 
+                ref project, 
+                ref rest, 
+            } => {
+                main(sub_cmd);
+            }
+            SubCommand::New { project, rest } => {
+                eprintln!("Populating a default binrw.toml file");
+            }
+            SubCommand::Fuzz { project, rest } => {
+                eprintln!("Fuzzing not yet implemented!");
+            }
+            SubCommand::Hex { project, rest } => {
+                eprintln!("Interactive view for hex parsing not yet implemented!"); 
+            }
+        },
+        Err(e) => {
+            todo!("Print the help message from clap");
+        }
+    }
     
-    let properties = if ::std::env::args().len() == 1 as usize {
- 
-        let mut content = String::from(include_str!("../data/default.toml").to_string());
-        
-        if let Some(manifest_dir) = ::std::env::var_os("CARGO_MANIFEST_DIR") {
-            
-            let some_propfile = {
-                match Path::new(&manifest_dir).join("binrw.toml") {
-                    project => {
-                        if project.try_exists().unwrap() { Some(project) } 
-                        else { None }
-                    },
-                    
-                }    
-            };
-            match some_propfile {
-                Some(toml_path) => {
-                    *&mut content = String::from(::std::fs::read_to_string(toml_path)
-                                                 .expect("Please report this as a bug."));
-                },
-                None => {
-                    // Default behavior handles this case
-                }
-            };
-        };
-    };
-
-    let args = StructOpt::from_args();
-    main(args)
 }

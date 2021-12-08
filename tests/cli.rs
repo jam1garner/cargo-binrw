@@ -1,9 +1,10 @@
 mod fixtures;
+use assert_cmd::assert::OutputAssertExt;
+use assert_cmd::cargo::CommandCargoExt;
+use assert_cmd::cargo::CommandCargoExt;
 use fixtures::Error;
 use std::process::Command;
 use structopt::clap::{crate_name, crate_version};
-use assert_cmd::cargo::CommandCargoExt;
-use assert_cmd::assert::OutputAssertExt;
 
 fn cargo_binrw() -> Command {
     Command::cargo_bin("cargo-binrw").unwrap()

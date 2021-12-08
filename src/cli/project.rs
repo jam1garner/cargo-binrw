@@ -26,5 +26,3 @@ pub fn new_project(name: &str) -> Result<(), 'static str> {
     Ok(())
 }
 
-
-

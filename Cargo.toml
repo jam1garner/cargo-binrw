@@ -7,8 +7,10 @@ categories = [
 ]
 
 [dependencies]
+cargo_metadata = "0.14.1"
 cfg-if = "1.0.0"
 minijinja = "0.8.1"
+reqwest = "0.11.6"
 serde = "1.0.130"
 structopt = { version = "0.3", optional = true }
 

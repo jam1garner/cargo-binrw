@@ -12,7 +12,7 @@ use binrw::{BinRead, BinWrite};
 #[derive(Clone, PartialEq, Default)]
 pub(crate) struct Call<'a, T: BinrwMessage + Sized> (
     pub /* msg_count: */ u16,
-    pub /* messages:  */ Cow<&'a T>,
+    pub /* messages:  */ Cow<&'a [T]>,
 );
 
 #[derive(Clone, PartialEq, Default)]

@@ -174,8 +174,8 @@ pub fn main(args: SubCommand) {
             
             for stream in listener.unwrap().incoming() {
                 let mut stream = stream.unwrap();
-                let recv = std::io::copy(&mut stream, &mut stdout.lock());
-                eprintln!("{:?}", &recv);
+                let recv = std::io::copy(&mut stream, &mut stdout.lock()).unwrap();
+                print!("{:#04x}", recv);
             }
         },
         _ => todo!()

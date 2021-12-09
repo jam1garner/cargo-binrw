@@ -1,0 +1,17 @@
+[package]
+name = "binrw-tracing"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cbindgen = "0.20.0"
+
+[dependencies.rustls-ffi]
+version = "0.8.2"
+features = [ "no_log_capture" ]
+
+[lib]
+name = "libtracing"
+crate-type = ["cdylib"]

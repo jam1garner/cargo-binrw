@@ -11,8 +11,8 @@ use binrw::{BinRead, BinWrite};
 /// then the data pertaining to that message.
 #[derive(Clone, PartialEq, Default)]
 pub(crate) struct Call<'a, T: BinrwMessage + Sized> (
-    pub(crate) /* msg_count: */ u16,
-    pub(crate) /* messages:  */ Cow<&'a T>,
+    pub /* msg_count: */ u16,
+    pub /* messages:  */ Cow<&'a [T]>,
 );
 
 #[derive(Clone, PartialEq, Default)]

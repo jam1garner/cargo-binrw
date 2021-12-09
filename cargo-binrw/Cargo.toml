@@ -1,0 +1,28 @@
+[package]
+name = "cargo-binrw"
+version = "0.1.0"
+edition = "2021"
+categories = [
+    "development-tools::cargo-plugins"
+]
+
+[dependencies]
+cargo_metadata = "0.14.1"
+cfg-if = "1.0.0"
+minijinja = "0.8.1"
+reqwest = "0.11.6"
+serde = "1.0.130"
+structopt = { version = "0.3", optional = true }
+
+[dev-dependencies]
+assert_cmd = "2.0.2"
+assert_fs = "1.0.6"
+port_check = "0.1.5"
+
+[[bin]]
+name="cargo-binrw"
+path="src/bin/main.rs"
+
+[features]
+default = ["cli"]
+cli = ["structopt"]

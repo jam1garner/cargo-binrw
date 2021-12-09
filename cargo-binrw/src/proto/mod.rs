@@ -16,9 +16,12 @@ pub(crate) struct Call<'a, T: BinrwMessage + Sized> (
 );
 
 #[derive(Clone, PartialEq, Default)]
-pub(crate) struct BinrwMessage<T: BinRead + BinWrite + Sized> (
-    pub(crate) /* len:  */ u16,
-    pub(crate) /* data: */ T,
+pub(crate) enum BinrwMessage<T: Clone + Debug + PartialEq + Sized> {
+    Connect,
+    Exit,
+    Highlight(T),
+    Message(T),
+    Update(T),
 );
 
 impl From<T: BinRead + Binwrite + Sized> for BinrwMessage {

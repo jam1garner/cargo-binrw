@@ -9,7 +9,7 @@ build = "build.rs"
 
 [build-dependencies]
 cbindgen = "0.20.0"
-binrw_trace = { version = "0.1.0", path = ".." }
+cargo-binrw = { version = "0.1.0", path = "../cargo-binrw" }
 rustls-ffi = { version = "0.8.2", features = [ "no_log_capture" ] }
 
 [lib]

@@ -3,13 +3,16 @@
 #![feature(path_try_exists)]
 use cfg_if::cfg_if;
 
+
 use std::path::{Path, PathBuf};
+use crate::error::Result;
+mod error;
+
 cfg_if! {
     if #[cfg(feature = "cli")] {
         use std::env;
         use std::net::IpAddr;
         use std::str::FromStr;
-        use std::path::{PathBuf};
         use structopt::StructOpt;
         use std::fs;
         // Move these back once debugging is done
@@ -39,7 +42,7 @@ pub fn find(specified: &Option<PathBuf>) -> Result<PathBuf> {
 /// Implementation borrowed from cargo-edit
 /// Search for Cargo.toml in this directory and recursively up the tree until one is found
 fn search(dir: &Path) -> Result<PathBuf> {
-    let manifest - dir.join("Cargo.toml");
+    let manifest = dir.join("Cargo.toml");
 
     if fs::metadata(&manifest).is_ok() {
         Ok(manifest)
@@ -122,7 +125,7 @@ impl Default for SubCommand {
     }
 }
 impl SubCommand {
-    fn verify_project(self) -> Result<Self, &'static str> {
+    fn verify_project(self) -> Result<Self> {
         let manifest = env::var_os("CARGO_MANIFEST_DIR")
             .unwrap()
             .into_string()
@@ -165,7 +168,7 @@ impl SubCommand {
 
 /// Checks wether an interface is valid, i.e. it can be parsed into an IP address
 #[cfg(feature = "cli")]
-fn parse_interface(src: &str) -> Result<IpAddr, std::net::AddrParseError> {
+fn parse_interface(src: &str) -> Result<IpAddr> { //, std::net::AddrParseError> {
     src.parse::<IpAddr>()
 }
 

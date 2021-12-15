@@ -1,5 +1,10 @@
+use std::io;
+use cargo_metadata;
+
+#[derive(Debug)]
 pub enum Error {
     BadIpAddr,
+    BadParse(::std::net::AddrParseError),
     NoPathFound,
     WriteIpDenied,
     NoCargoToml,

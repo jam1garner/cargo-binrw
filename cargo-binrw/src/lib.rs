@@ -2,7 +2,7 @@
 #![allow(unused_variables)]
 #![feature(path_try_exists)]
 use cfg_if::cfg_if;
-
+use regex::Regex;
 use std::path::Path;
 
 cfg_if! {
@@ -81,22 +81,30 @@ impl Default for SubCommand {
             host: vec![IpAddr::V4(::std::net::Ipv4Addr::new(127, 0, 0, 1))],
             port: 31958 as u16,
             project: Some(
-                env::var_os("CARGO_MANIFEST_DIR")
-                    .unwrap()
-                    .into_string()
-                    .unwrap()
+                get_project_name().unwrap()
             ),
             rest: vec![],
         }
     }
 }
+
+fn get_project_name() -> Option<String> {
+    let lines = ::std::fs::read_to_string("Cargo.toml").expect("Can't read file.");
+    let re = Regex::new(r#"name = "(.*)""#).unwrap();
+    for cap in re.captures_iter(&lines) {
+        // Greedily return the first match
+        return Some(String::from(&cap[1]))
+    }
+    //println!("{:?}", &lines);
+   
+
+    Some(String::from("binrw"))
+    
+}
+
 impl SubCommand {
     fn verify_project(self) -> Result<Self, &'static str> {
-        let manifest = env::var_os("CARGO_MANIFEST_DIR")
-            .unwrap()
-            .into_string()
-            .unwrap();
-
+        let manifest = get_project_name().unwrap();
         match self {
             Self::Run {
                 host,

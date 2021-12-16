@@ -2,11 +2,8 @@
 #![allow(unused_variables)]
 #![feature(path_try_exists)]
 use cfg_if::cfg_if;
-
-
-use std::path::{Path, PathBuf};
-use crate::error::Result;
-mod error;
+use regex::Regex;
+use std::path::Path;
 
 cfg_if! {
     if #[cfg(feature = "cli")] {
@@ -115,22 +112,23 @@ impl Default for SubCommand {
             host: vec![IpAddr::V4(::std::net::Ipv4Addr::new(127, 0, 0, 1))],
             port: 31958 as u16,
             project: Some(
-                env::var_os("CARGO_MANIFEST_DIR")
-                    .unwrap()
-                    .into_string()
-                    .unwrap()
+                get_project_name().unwrap()
             ),
             rest: vec![],
         }
     }
 }
-impl SubCommand {
-    fn verify_project(self) -> Result<Self> {
-        let manifest = env::var_os("CARGO_MANIFEST_DIR")
-            .unwrap()
-            .into_string()
-            .unwrap();
 
+fn get_project_name() -> Option<String> {
+    let lines = ::std::fs::read_to_string("Cargo.toml").expect("Can't read file.");
+    let re = Regex::new(r#"name = "(.*)""#).unwrap();
+    let mut cap = re.captures_iter(&lines);
+    Some(String::from(&cap.next().unwrap()[1]))
+}
+
+impl SubCommand {
+    fn verify_project(self) -> Result<Self, &'static str> {
+        let manifest = get_project_name().unwrap();
         match self {
             Self::Run {
                 host,

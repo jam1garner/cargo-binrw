@@ -6,6 +6,7 @@ use fixtures::Error;
 use std::process::{ Command, Stdio };
 use core::time::Duration;
 use structopt::clap::{crate_name, crate_version};
+use wait_timeout::ChildExt;
 
 fn cargo_binrw() -> Command {
     Command::cargo_bin("cargo-binrw").unwrap()

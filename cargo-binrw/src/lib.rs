@@ -4,6 +4,7 @@
 use cfg_if::cfg_if;
 use regex::Regex;
 use std::path::Path;
+use std::path::PathBuf;
 
 cfg_if! {
     if #[cfg(feature = "cli")] {
@@ -19,36 +20,7 @@ cfg_if! {
     }
 }
 
-/// Implementation borrowed from cargo-edit
-/// If a manifest is specified, return that one, otherwise
-/// perform a manifest search starting from the current directory.
-pub fn find(specified: &Option<PathBuf>) -> Result<PathBuf> {
-    match *specified {
-        Some(ref path) 
-            if fs::metadata(&path)
-                .chain_err("Failed to get cargo file metadata")?
-                .is_file() => 
-        {
-            Ok(path.to_owned())
-        }
-        Some(ref path) => search(path),
-        None => search(&env::current_dir().chain_err(|| "Failed to get CWD")?),
-    }
-}
 
-/// Implementation borrowed from cargo-edit
-/// Search for Cargo.toml in this directory and recursively up the tree until one is found
-fn search(dir: &Path) -> Result<PathBuf> {
-    let manifest = dir.join("Cargo.toml");
-
-    if fs::metadata(&manifest).is_ok() {
-        Ok(manifest)
-    } else {
-        dir.parent()
-            .ok_or_else(|| Err("Manifest not found"))
-            .and_then(search)
-    }
-}
 
 #[cfg_attr(feature = "cli", derive(StructOpt, Debug))]
 #[structopt(
@@ -166,7 +138,7 @@ impl SubCommand {
 
 /// Checks wether an interface is valid, i.e. it can be parsed into an IP address
 #[cfg(feature = "cli")]
-fn parse_interface(src: &str) -> Result<IpAddr> { //, std::net::AddrParseError> {
+fn parse_interface(src: &str) -> Result<IpAddr, std::net::AddrParseError> {
     src.parse::<IpAddr>()
 }
 

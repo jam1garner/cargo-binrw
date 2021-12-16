@@ -14,7 +14,7 @@ fn cargo_binrw() -> Command {
 fn help() {
     cargo_binrw().args(&["binrw", "help"]).assert().success();
 }
-//! Commenting out this test for now because it breaks things
+// Commenting out this test for now because it breaks things
 /*#[test]
 fn run() {
     cargo_binrw().args(&["binrw", "run"]).assert().success();

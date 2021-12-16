@@ -91,15 +91,8 @@ impl Default for SubCommand {
 fn get_project_name() -> Option<String> {
     let lines = ::std::fs::read_to_string("Cargo.toml").expect("Can't read file.");
     let re = Regex::new(r#"name = "(.*)""#).unwrap();
-    for cap in re.captures_iter(&lines) {
-        // Greedily return the first match
-        return Some(String::from(&cap[1]))
-    }
-    //println!("{:?}", &lines);
-   
-
-    Some(String::from("binrw"))
-    
+    let mut cap = re.captures_iter(&lines);
+    Some(String::from(&cap.next().unwrap()[1]))
 }
 
 impl SubCommand {

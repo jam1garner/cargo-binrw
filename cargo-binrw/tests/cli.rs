@@ -22,11 +22,7 @@ fn run() {
     use wait_timeout::ChildExt;
    
 
-    let mut child = cargo_binrw()
-        .args(&["binrw", "run"])
-        .stdout(Stdio::piped())
-        .spawn()
-        .unwrap();
+    let mut child = cargo_binrw().args(&["binrw", "run"]).stdout(Stdio::piped()).spawn().unwrap();
     
     let secs = Duration::from_secs(2);
     let _status_code = match child.wait_timeout(secs).unwrap() {
@@ -48,11 +44,8 @@ fn new_fail() {
     cargo_binrw().args(&["binrw", "new"]).assert().failure();
 }
 
-
-
 #[test]
 fn fuzz() {
     cargo_binrw().args(&["binrw", "fuzz"]).assert().success();
 }
-
 
